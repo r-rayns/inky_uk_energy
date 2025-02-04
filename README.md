@@ -2,7 +2,7 @@
 
 Generates an image that displays the energy mix data for the UK from
 the [Carbon Intensity API](https://api.carbonintensity.org.uk/generation). Intended to be used in conjunction with
-the [Inky Dash](https://github.com/inky-dash/inky-dash) image-feed mode.
+the [Inky Dash](https://github.com/r-rayns/inky_dash) image-feed mode.
 
 ## Output 🖼️
 
@@ -13,7 +13,13 @@ displays:
 - [Inky Impression 5.7"](https://shop.pimoroni.com/products/inky-impression-5-7?variant=32298701324371)
 - [Inky Impression 7.3"](https://shop.pimoroni.com/products/inky-impression-7-3?variant=40512683376723)
 
+**Example output**
+
 ![Example output](./example.png)
+
+**Example output displaying on an Inky Impressions 4"**
+
+![Photo of the output displaying on an Inky Impression 4"](./inky-impression.jpg)
 
 ## Setup 🛠️
 
