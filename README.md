@@ -27,7 +27,7 @@ displays:
 2. If you have [Poetry](https://python-poetry.org/) installed, run `poetry install` to install the dependencies. If you
    do not have Poetry installed, you can install dependencies by creating a new Python virtual environment and running
    `pip install -r requirements.txt`.
-3. From the project root run; `poetry run python3 src/app.py` or if you are not using Poetry; `python3 src/app.py`.
+3. From the project root run; `poetry run python3 -m src.app` or if you are not using Poetry; `python3 -m src.app`.
 4. A png image will be created in the root of the project directory called "energy_data.png".
 5. The image is updated every 15 minutes from the start of the hour.
 6. If you are using the `--server` flag, the image will be hosted at http://localhost:9000/energy_data.png.
@@ -44,33 +44,34 @@ A systemd file can be used to run the image generator as a service.
 1. Create a new file called `inky_uk_energy.service` in `/etc/systemd/system/`.
 
 2. Copy the example below into the new file. `WorkingDirectory` points to the project directory. The `ExecStart` path
-   should use the Python binary in your virtual environment to run `src/app.py`. Replace `your_username` with the correct
+   should use the Python binary in your virtual environment to run `src/app.py`. Replace `your_username` with the
+   correct
    username.
 
-```
-[Unit]
-Description=Inky UK Energy Image Generator
-After=network.target
+   ```
+   [Unit]
+   Description=Inky UK Energy Image Generator
+   After=network.target
 
-[Service]
-User=pi
-WorkingDirectory=/home/your_username/inky_uk_energy/
-ExecStart=/home/your_username/venv/inky-uk-energy/bin/python3 src/app.py --server
-Restart=always
+   [Service]
+   User=<your_username>
+   WorkingDirectory=/home/<your_username>/inky_uk_energy/
+   ExecStart=/home/<your_username>/venv/inky-uk-energy/bin/python3 -m src.app --server
+   Restart=always
 
-[Install]
-WantedBy=multi-user.target
-```
+   [Install]
+   WantedBy=multi-user.target
+   ```
 
 3. Save the systemd service file.
 
 4. Refresh systemd then enable and start the service
 
-```
-sudo systemctl daemon-reload
-sudo systemctl enable inky_uk_energy
-sudo service inky_uk_energy start
-```
+   ```
+   sudo systemctl daemon-reload
+   sudo systemctl enable inky_uk_energy
+   sudo service inky_uk_energy start
+   ```
 
 ## Attribution 🏷️
 
