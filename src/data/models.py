@@ -1,8 +1,6 @@
 from abc import ABC
 from enum import Enum
-from typing import TypedDict, List
-
-from src.logger import logger
+from typing import TypedDict, List, Union
 
 
 class GenerationMix(TypedDict):
@@ -51,8 +49,17 @@ class DisplayType(str, Enum):
   IMPRESSION_7 = "IMPRESSION_7"
 
 
-type PHAT_104 = DisplayType.PHAT_104_RED or DisplayType.PHAT_104_YELLOW or DisplayType.PHAT_104_BLACK
-type PHAT_122 = DisplayType.PHAT_122_RED or DisplayType.PHAT_122_YELLOW or DisplayType.PHAT_122_BLACK
+PHAT_104_DISPLAYS = Union[
+  DisplayType.PHAT_104_RED,
+  DisplayType.PHAT_104_YELLOW,
+  DisplayType.PHAT_104_BLACK
+]
+
+PHAT_122_DISPLAYS = Union[
+  DisplayType.PHAT_122_RED,
+  DisplayType.PHAT_122_YELLOW,
+  DisplayType.PHAT_122_BLACK
+]
 
 
 class InkyDisplay(ABC):
@@ -65,12 +72,12 @@ class InkyDisplay(ABC):
 
 class PHAT104(InkyDisplay):
   range = DisplayRange.PHAT
-  type: PHAT_104
+  type: PHAT_104_DISPLAYS
   width: int = 212
   height: int = 104
   palette: PhatColourPalette
 
-  def __init__(self, phat_104_type: PHAT_104):
+  def __init__(self, phat_104_type: PHAT_104_DISPLAYS):
     self.type = phat_104_type
     if phat_104_type == DisplayType.PHAT_104_RED:
       self.palette = PhatColourPalette.RED
@@ -82,12 +89,12 @@ class PHAT104(InkyDisplay):
 
 class PHAT122(InkyDisplay):
   range = DisplayRange.PHAT
-  type: PHAT_122
+  type: PHAT_122_DISPLAYS
   width: int = 250
   height: int = 112
   palette: PhatColourPalette
 
-  def __init__(self, phat_122_type: PHAT_122):
+  def __init__(self, phat_122_type: PHAT_122_DISPLAYS):
     self.type = phat_122_type
     if phat_122_type == DisplayType.PHAT_122_RED:
       self.palette = PhatColourPalette.RED
