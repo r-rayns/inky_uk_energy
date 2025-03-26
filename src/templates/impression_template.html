@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UK Energy Mix</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    {{ base_css | safe }}
+
+    :root {
+      font-size: 24px;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      padding: 10px;
+      height: 100%;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .header {
+      display: flex;
+      flex-direction: row;
+      align-items: start;
+      align-content: stretch;
+      justify-content: space-between;
+    }
+
+    .header__datetime {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-size: var(--small);
+    }
+
+    .header__time {
+      font-weight: 500;
+    }
+
+    .header__date {
+      font-weight: 400;
+    }
+
+    .header__title {
+      font-size: var(--x-large);
+      font-weight: 500;
+    }
+
+    .carbon-intensity {
+      font-size: var(--small);
+    }
+
+    .carbon-intensity__title {
+      font-weight: 400;
+    }
+
+    .carbon-intensity__index {
+      text-transform: capitalize;
+      padding: 3px;
+      border-radius: 5px;
+      font-weight: 500;
+      text-align: center;
+    }
+
+    .energy-top-row {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      flex-wrap: wrap;
+    }
+
+    .energy-middle-row {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-around;
+      margin-top: 0.2rem;
+      flex-wrap: wrap;
+    }
+
+    .energy-bottom-row {
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      margin-top: 0.2rem;
+      gap: 0.3rem;
+    }
+
+    .energy-top-row__item,
+    .energy-middle-row__item,
+    .energy-bottom-row__item {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+    }
+
+    .energy-top-row__item,
+    .energy-middle-row__item {
+      padding: 0 0.5rem;
+      gap: 0.5rem;
+    }
+
+    .energy-bottom-row__item {
+      padding: 0 0.2rem;
+      gap: 0.2rem;
+    }
+
+    .energy-top-row__icon svg {
+      width: 45px;
+      height: 45px;
+      stroke-width: 3px;
+    }
+
+    .energy-middle-row__icon svg {
+      width: 35px;
+      height: 35px;
+    }
+
+    .energy-bottom-row__icon svg {
+      width: 24px;
+      height: 24px;
+      stroke-width: 3px;
+    }
+
+    .energy-top-row__icon--gas svg,
+    .energy-middle-row__icon--gas svg,
+    .energy-bottom-row__icon--gas svg {
+      stroke: var(--blue);
+    }
+
+    .energy-top-row__icon--wind svg,
+    .energy-middle-row__icon--wind svg,
+    .energy-bottom-row__icon--wind svg {
+      stroke: var(--wind);
+    }
+
+    .energy-top-row__icon--solar svg,
+    .energy-middle-row__icon--solar svg,
+    .energy-bottom-row__icon--solar svg {
+      stroke: var(--solar);
+    }
+
+    .energy-top-row__icon--hydro svg,
+    .energy-middle-row__icon--hydro svg,
+    .energy-bottom-row__icon--hydro svg {
+      stroke: var(--hydro);
+    }
+
+    .energy-top-row__icon--biomass svg,
+    .energy-middle-row__icon--biomass svg,
+    .energy-bottom-row__icon--biomass svg {
+      stroke: var(--biomass);
+    }
+
+    .energy-top-row__icon--coal svg,
+    .energy-middle-row__icon--coal svg,
+    .energy-bottom-row__icon--coal svg {
+      stroke: var(--coal);
+    }
+
+    .energy-top-row__icon--nuclear svg,
+    .energy-middle-row__icon--nuclear svg,
+    .energy-bottom-row__icon--nuclear svg {
+      stroke: var(--nuclear);
+    }
+
+    .energy-top-row__icon--other svg,
+    .energy-middle-row__icon--other svg,
+    .energy-bottom-row__icon--other svg {
+      stroke: var(--other);
+    }
+
+    .energy-top-row__icon--imports svg,
+    .energy-middle-row__icon--imports svg,
+    .energy-bottom-row__icon--imports svg {
+      stroke: var(--imports);
+    }
+
+    .dot {
+      height: 10px;
+      width: 10px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .dot--gas {
+      background-color: var(--gas);
+    }
+
+    .dot--wind {
+      background-color: var(--wind);
+    }
+
+    .dot--solar {
+      background-color: var(--solar);
+    }
+
+    .dot--hydro {
+      background-color: var(--hydro);
+    }
+
+    .dot--biomass {
+      background-color: var(--biomass);
+    }
+
+    .dot--coal {
+      background-color: var(--coal);
+    }
+
+    .dot--nuclear {
+      background-color: var(--nuclear);
+    }
+
+    .dot--other {
+      background-color: var(--other);
+    }
+
+    .dot--imports {
+      background-color: var(--imports);
+    }
+
+    .energy-top-row__content,
+    .energy-middle-row__content {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .energy-bottom-row__content {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 0.2rem;
+    }
+
+    .energy-top-row__fuel {
+      font-size: var(--regular);
+      font-weight: 400;
+    }
+
+    .energy-middle-row__fuel {
+      font-size: var(--small);
+      font-weight: 400;
+    }
+
+    .energy-bottom-row__fuel {
+      font-size: var(--small);
+      font-weight: 400;
+    }
+
+    .energy-top-row__percentage,
+    .energy-middle-row__percentage,
+    .energy-bottom-row__percentage {
+      display: flex;
+      flex-direction: row;
+      font-weight: 500;
+      gap: 0.3rem;
+      align-items: center;
+    }
+
+    .energy-top-row__percentage {
+      font-size: var(--large);
+    }
+
+    .energy-middle-row__percentage {
+      font-size: var(--regular);
+    }
+
+    .energy-bottom-row__percentage {
+      font-size: var(--small);
+    }
+
+    .energy-top-row__percentage svg {
+      height: 24px;
+      width: 24px;
+    }
+
+    .energy-middle-row__percentage svg {
+      height: 18px;
+      width: 18px;
+    }
+
+    .energy-bottom-row__percentage svg {
+      height: 16px;
+      width: 16px;
+    }
+
+    svg.lucide-trending-up {
+      color: var(--green);
+    }
+
+    svg.lucide-trending-down {
+      color: var(--red);
+    }
+
+    .chart {
+      display: flex;
+      height: 100%;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div class="header__datetime">
+      <div class="header__time">{{ from_time }}-{{ to_time }}</div>
+      <div class="header__date">{{ date }}</div>
+    </div>
+    <div class="header__title">UK Energy Mix</div>
+    <div class="carbon-intensity">
+      <div class="carbon-intensity__title">Carbon Intensity</div>
+      <div class="carbon-intensity__index carbon-intensity__index--{{ intensity_index }}">{{ intensity_index_label }}
+      </div>
+    </div>
+  </div>
+
+  <div class="energy-top-row">
+    {% for generation in top_row_generation_mix %}
+    {% if generation.fuel in valid_fuel_types %}
+    <div class="energy-top-row__item energy-top-row__item--{{ generation.fuel }}">
+      <div class="energy-top-row__icon energy-top-row__icon--{{ generation.fuel }}">
+        {{ svg_files[generation.fuel] | safe}}
+      </div>
+      <div class="energy-top-row__content ">
+        <div class="energy-top-row__fuel">{{ generation.fuel|capitalize }}</div>
+        <div class="energy-top-row__percentage">
+          {{ generation.perc }}%
+          {% if generation.perc > previous_mix_by_fuel[generation.fuel] %}
+          {{ svg_files['trending-up'] | safe}}
+          {% elif generation.perc < previous_mix_by_fuel[generation.fuel] %}
+          {{ svg_files['trending-down'] | safe}}
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    {% endif %}
+    {% endfor %}
+  </div>
+  <div class="energy-middle-row">
+    {% for generation in middle_row_generation_mix %}
+    {% if generation.fuel in valid_fuel_types %}
+    <div class="energy-middle-row__item energy-middle-row__item--{{ generation.fuel }}">
+      <div class="energy-middle-row__icon energy-middle-row__icon--{{ generation.fuel }}">
+        {{ svg_files[generation.fuel] | safe}}
+      </div>
+      <div class="energy-middle-row__content ">
+        <div class="energy-middle-row__fuel">{{ generation.fuel|capitalize }}</div>
+        <div class="energy-middle-row__percentage">
+          {{ generation.perc }}%
+          {% if generation.perc > previous_mix_by_fuel[generation.fuel] %}
+          {{ svg_files['trending-up'] | safe}}
+          {% elif generation.perc < previous_mix_by_fuel[generation.fuel] %}
+          {{ svg_files['trending-down'] | safe}}
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    {% endif %}
+    {% endfor %}
+  </div>
+  <div class="energy-bottom-row">
+    {% for generation in bottom_row_generation_mix %}
+    {% if generation.fuel in valid_fuel_types %}
+    <div class="energy-bottom-row__item energy-bottom-row__item--{{ generation.fuel }}">
+      <span class="dot dot--{{ generation.fuel }}"></span>
+      <div class="energy-bottom-row__content ">
+        <div class="energy-bottom-row__fuel">{{ generation.fuel|capitalize }}</div>
+        <div class="energy-bottom-row__percentage">
+          {{ generation.perc }}%
+          {% if generation.perc > previous_mix_by_fuel[generation.fuel] %}
+          {{ svg_files['trending-up'] | safe}}
+          {% elif generation.perc < previous_mix_by_fuel[generation.fuel] %}
+          {{ svg_files['trending-down'] | safe}}
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    {% endif %}
+    {% endfor %}
+  </div>
+  <div class="chart">
+    <canvas id="energyChart"></canvas>
+  </div>
+</div>
+</body>
+<script>
+  function getCssVariable(name) {
+    return getComputedStyle(document.documentElement).getPropertyValue(name);
+  }
+
+  (() => {
+    const jsonData = '{{ past_24h_energy_data | tojson }}'
+    const fuelTypes = JSON.parse('{{valid_fuel_types | tojson }}')
+    const chartData = JSON.parse(jsonData);
+
+    // Create an array of times to use as the x-axis labels
+    const labels = chartData.map(entry => new Date(entry.from).toLocaleTimeString('en-GB', {
+      hour: '2-digit',
+      minute: '2-digit'
+    }));
+
+    const fuelTypeColourMapping = {
+      gas: getCssVariable('--gas'),
+      imports: getCssVariable('--imports'),
+      nuclear: getCssVariable('--nuclear'),
+      solar: getCssVariable('--solar'),
+      biomass: getCssVariable('--biomass'),
+      wind: getCssVariable('--wind'),
+      coal: getCssVariable('--coal'),
+      hydro: getCssVariable('--hydro'),
+      other: getCssVariable('--other')
+    }
+
+    // Create the datasets for each fuel type
+    const datasets = fuelTypes.map(fuel => {
+      return {
+        label: fuel,
+        data: chartData.map(entry => {
+          // Find the data for the matching fuel type and return the percentage
+          const mix = entry.generationmix.find(mix => mix.fuel === fuel);
+          return mix?.perc || 0;
+        }),
+        borderColor: fuelTypeColourMapping[fuel],
+        fill: false,
+        pointRadius: 0,
+        borderWidth: 5
+      };
+    });
+
+    const viewportHeight = window.visualViewport.height;
+
+    const ctx = document.getElementById('energyChart').getContext('2d');
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels,
+        datasets
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: {
+          duration: 0
+        },
+        plugins: {
+          title: {
+            display: viewportHeight > 400,
+            text: 'Energy mix for the past 24 hours',
+            position: 'top',
+            align: 'center',
+            padding: {
+              top: 10,
+              bottom: 5
+            },
+            font: {
+              size: 16,
+              weight: 'bold',
+              family: 'sans-serif'
+            },
+            color: '#1C181C'
+          },
+          legend: {
+            display: false,
+            position: 'right',
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            title: {
+              display: true,
+              text: 'Percent (%)',
+              font: {
+                size: 16,
+                weight: 'bold',
+                family: 'sans-serif'
+              },
+              color: '#1C181C'
+            },
+            ticks: {
+              font: {
+                size: 16,
+                weight: 'bold',
+                family: 'sans-serif'
+              },
+              color: '#1C181C'
+            },
+            grid: {
+              lineWidth: 5
+            },
+          },
+          x: {
+            title: {
+              display: true,
+              text: viewportHeight > 400 ? 'Time' : 'Energy mix for the past 24 hours',
+              font: {
+                size: 16,
+                weight: 'bold',
+                family: 'sans-serif'
+              },
+              color: '#1C181C'
+            },
+            ticks: {
+              font: {
+                size: 16,
+                weight: 'bold',
+                family: 'sans-serif'
+              },
+              color: '#1C181C'
+            },
+            grid: {
+              lineWidth: 5
+            },
+          }
+        }
+      }
+    });
+  })()
+</script>
+</html>

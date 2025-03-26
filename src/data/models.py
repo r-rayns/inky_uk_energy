@@ -1,4 +1,8 @@
+from abc import ABC
+from enum import Enum
 from typing import TypedDict, List
+
+from src.logger import logger
 
 
 class GenerationMix(TypedDict):
@@ -14,3 +18,104 @@ EnergyData = TypedDict('EnergyData', {
 })
 
 valid_fuel_types = ['gas', 'wind', 'solar', 'hydro', 'biomass', 'coal', 'nuclear', 'other', 'imports']
+
+
+class CarbonIntensityIndex(str, Enum):
+  VERY_LOW = "very low"
+  LOW = "low"
+  MODERATE = "moderate"
+  HIGH = "high"
+  VERY_HIGH = "very high"
+
+
+class PhatColourPalette(str, Enum):
+  RED = "red"
+  YELLOW = "yellow"
+  BLACK = "black"
+
+
+class DisplayRange(str, Enum):
+  PHAT = "pHAT"
+  IMPRESSION = "Impression"
+
+
+class DisplayType(str, Enum):
+  PHAT_104_RED = "pHAT_104_red"
+  PHAT_104_YELLOW = "pHAT_104_yellow"
+  PHAT_104_BLACK = "pHAT_104_black"
+  PHAT_122_RED = "pHAT_122_red"
+  PHAT_122_YELLOW = "pHAT_122_yellow"
+  PHAT_122_BLACK = "pHAT_122_black"
+  IMPRESSION_4 = "IMPRESSION_4"
+  IMPRESSION_5 = "IMPRESSION_5"
+  IMPRESSION_7 = "IMPRESSION_7"
+
+
+type PHAT_104 = DisplayType.PHAT_104_RED or DisplayType.PHAT_104_YELLOW or DisplayType.PHAT_104_BLACK
+type PHAT_122 = DisplayType.PHAT_122_RED or DisplayType.PHAT_122_YELLOW or DisplayType.PHAT_122_BLACK
+
+
+class InkyDisplay(ABC):
+  range: DisplayRange
+  type: DisplayType
+  width: int
+  height: int
+  palette: None or PhatColourPalette
+
+
+class PHAT104(InkyDisplay):
+  range = DisplayRange.PHAT
+  type: PHAT_104
+  width: int = 212
+  height: int = 104
+  palette: PhatColourPalette
+
+  def __init__(self, phat_104_type: PHAT_104):
+    self.type = phat_104_type
+    if phat_104_type == DisplayType.PHAT_104_RED:
+      self.palette = PhatColourPalette.RED
+    elif phat_104_type == DisplayType.PHAT_104_YELLOW:
+      self.palette = PhatColourPalette.YELLOW
+    elif phat_104_type == DisplayType.PHAT_104_BLACK:
+      self.palette = PhatColourPalette.BLACK
+
+
+class PHAT122(InkyDisplay):
+  range = DisplayRange.PHAT
+  type: PHAT_122
+  width: int = 250
+  height: int = 112
+  palette: PhatColourPalette
+
+  def __init__(self, phat_122_type: PHAT_122):
+    self.type = phat_122_type
+    if phat_122_type == DisplayType.PHAT_122_RED:
+      self.palette = PhatColourPalette.RED
+    elif phat_122_type == DisplayType.PHAT_122_YELLOW:
+      self.palette = PhatColourPalette.YELLOW
+    elif phat_122_type == DisplayType.PHAT_122_BLACK:
+      self.palette = PhatColourPalette.BLACK
+
+
+class IMPRESSION4(InkyDisplay):
+  range = DisplayRange.IMPRESSION
+  type: str = DisplayType.IMPRESSION_4
+  width: int = 640
+  height: int = 400
+  palette = None
+
+
+class IMPRESSION5(InkyDisplay):
+  range = DisplayRange.IMPRESSION
+  type: str = DisplayType.IMPRESSION_5
+  width: int = 600
+  height: int = 448
+  palette = None
+
+
+class IMPRESSION7(InkyDisplay):
+  range = DisplayRange.IMPRESSION
+  type: str = DisplayType.IMPRESSION_7
+  width: int = 800
+  height: int = 480
+  palette = None

@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UK Energy Mix</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    {{ base_css | safe }}
+
+    :root {
+      font-size: 14px;
+      --phat-104w: 212px;
+      --phat-104h: 104px;
+      --phat-112w: 250px;
+      --phat-112h: 112px;
+      {% if colour_palette == "red" %}
+      --theme: var(--red);
+      --contrast: var(--white);
+      {% elif colour_palette == "yellow" %}
+      --theme: var(--yellow);
+      --contrast: var(--black);
+      {% else %}
+      --theme: var(--black);
+      --contrast: var(--white);
+      {% endif %}
+    }
+
+    body {
+      font-family: monospace;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      /*height: 104px;*/
+      /*width: 212px;*/
+      height: 100%;
+      width: 100%;
+      border: 1px solid var(--black);
+      box-sizing: border-box;
+      max-width: var(--phat-112w);
+      max-height: var(--phat-112h);
+    }
+
+    .header {
+      display: flex;
+      flex-direction: row;
+      align-items: start;
+      align-content: stretch;
+      justify-content: center;
+      background: var(--theme);
+      color: var(--contrast);
+    }
+
+    .header__title {
+      font-size: var(--small);
+      @media screen and (min-width: var(--phat-112w)) {
+        font-size: var(--regular);
+      }
+      text-transform: uppercase;
+      font-weight: 900;
+    }
+
+    .energy-mix {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-evenly;
+      text-transform: uppercase;
+      flex-grow: 1;
+      padding: 0 3px;
+    }
+
+    .energy-top-row,
+    .energy-middle-row {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+    }
+
+    .energy-top-row__item,
+    .energy-middle-row__item {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 0.2rem;
+    }
+
+    .energy-top-row__icon svg {
+      width: 18px;
+      height: 18px;
+      stroke-width: 3px;
+      stroke: var(--theme);
+    }
+
+    .energy-middle-row__icon svg {
+      width: 16px;
+      height: 16px;
+      stroke-width: 3px;
+      stroke: var(--theme);
+    }
+
+    .energy-top-row__content,
+    .energy-middle-row__content {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .energy-top-row__fuel,
+    .energy-middle-row__fuel {
+      font-size: var(--small);
+      font-weight: 900;
+      color: var(--theme);
+    }
+
+    .energy-top-row__percentage,
+    .energy-middle-row__percentage {
+      display: flex;
+      flex-direction: row;
+      font-weight: 900;
+      gap: 0.3rem;
+      align-items: center;
+      font-size: var(--small);
+    }
+
+    .carbon-intensity {
+      font-size: var(--small);
+      font-weight: 900;
+      text-transform: uppercase;
+      color: var(--white);
+      background: var(--black);
+      width: 100%;
+      text-align: center;
+      margin-bottom: 1px;
+    }
+
+    footer {
+      display: flex;
+      flex-direction: column;
+      border-top: 2px solid var(--black);
+      padding: 0 2px;
+      text-transform: uppercase;
+    }
+
+    .datetime {
+      display: flex;
+      flex-direction: column;
+      font-size: var(--x-small);
+      font-weight: 900;
+      align-self: center;
+    }
+
+    .energy-top-row__percentage svg,
+    .energy-middle-row__percentage svg {
+      height: 10px;
+      width: 10px;
+    }
+
+    svg.lucide-trending-up,
+    svg.lucide-trending-down {
+      color: var(--black);
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div class="header__title">UK Energy Mix</div>
+  </div>
+  <div class="energy-mix">
+    <div class="energy-top-row">
+      {% for generation in top_row_generation_mix %}
+      {% if generation.fuel in valid_fuel_types %}
+      <div class="energy-top-row__item">
+        <div class="energy-top-row__icon">
+          {{ svg_files[generation.fuel] | safe}}
+        </div>
+        <div class="energy-top-row__content ">
+          <div class="energy-top-row__fuel">{{ generation.fuel|capitalize }}</div>
+          <div class="energy-top-row__percentage">
+            {{ generation.perc }}%
+            {% if generation.perc > previous_mix_by_fuel[generation.fuel] %}
+            {{ svg_files['trending-up'] | safe}}
+            {% elif generation.perc < previous_mix_by_fuel[generation.fuel] %}
+            {{ svg_files['trending-down'] | safe}}
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      {% endif %}
+      {% endfor %}
+    </div>
+    <div class="energy-middle-row">
+      {% for generation in middle_row_generation_mix %}
+      {% if generation.fuel in valid_fuel_types %}
+      <div class="energy-middle-row__item">
+        <div class="energy-middle-row__icon">
+          {{ svg_files[generation.fuel] | safe}}
+        </div>
+        <div class="energy-middle-row__content ">
+          <div class="energy-middle-row__fuel">{{ generation.fuel|capitalize }}</div>
+          <div class="energy-middle-row__percentage">
+            {{ generation.perc }}%
+            {% if generation.perc > previous_mix_by_fuel[generation.fuel] %}
+            {{ svg_files['trending-up'] | safe}}
+            {% elif generation.perc < previous_mix_by_fuel[generation.fuel] %}
+            {{ svg_files['trending-down'] | safe}}
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      {% endif %}
+      {% endfor %}
+    </div>
+  </div>
+  <div class="carbon-intensity">Carbon intensity is {{ intensity_index_label }}</div>
+  <footer>
+    <div class="datetime">{{ from_time }}-{{ to_time }} | {{ date }}</div>
+  </footer>
+</div>
+</body>
+</html>

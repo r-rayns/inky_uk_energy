@@ -1,0 +1,75 @@
+:root {
+  /* Inky display colours */
+  --black: #1C181C;
+  --white: #FFFFFF;
+  --green: #1DAD23;
+  --blue: #1E1DAE;
+  --red: #CD2425;
+  --yellow: #E7DE23;
+  --orange: #D87B24;
+  /* Fuel colours */
+  --gas: var(--blue);
+  --wind: #79a5ff;
+  --solar: var(--orange);
+  --hydro: #29b6f6;
+  --biomass: var(--green);
+  --coal: var(--black);
+  --nuclear: #6ef8ec;
+  --other: #554C54;
+  --imports: #9643A5;
+  /*  Carbon index colours */
+  --very-low: #96fc76;
+  --low: #488f31;
+  --moderate: var(--yellow);
+  --high: var(--orange);
+  --very-high: var(--red);
+  /*  Font sizes */
+  --x-small: 0.6rem;
+  --small: 0.8rem;
+  --regular: 1rem;
+  --large: 1.2rem;
+  --x-large: 1.5rem;
+  --xl-large: 1.8rem;
+  --xll-large: 2rem;
+}
+
+html {
+  height: 100%;
+}
+
+body {
+  font-family: sans-serif;
+  text-rendering: geometricPrecision;
+  margin: 0;
+  padding: 0;
+  background-color: var(--white);
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  color: var(--black);
+}
+
+.carbon-intensity__index--very-low {
+  background: var(--very-low);
+  color: var(--black);
+}
+
+.carbon-intensity__index--low {
+  background: var(--low);
+  color: var(--white);
+}
+
+.carbon-intensity__index--moderate {
+  background: var(--moderate);
+  color: var(--black);
+}
+
+.carbon-intensity__index--high {
+  background: var(--high);
+  color: var(--white);
+}
+
+.carbon-intensity__index--very-high {
+  background: var(--very-high);
+  color: var(--white);
+}

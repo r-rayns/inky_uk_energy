@@ -1,3 +1,5 @@
 .idea
-energy_data.png
+energy_data_*.png
+energy_data_*.html
 __pycache__/
+.env

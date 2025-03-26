@@ -2,8 +2,9 @@ from typing import List
 
 import requests
 from datetime import datetime, timedelta
+from pytz import timezone
 
-from src.data.models import EnergyData, GenerationMix
+from src.data.models import EnergyData, GenerationMix, CarbonIntensityIndex
 from src.logger import logger
 
 
@@ -16,7 +17,8 @@ class EnergyDataClient:
     res = requests.get("https://api.carbonintensity.org.uk/generation").json()
     latest_energy_data: EnergyData = res.get('data')
     if sort_generation_mix:
-      latest_energy_data['generationmix'] = EnergyDataClient.sort_generation_mix(latest_energy_data.get('generationmix'))
+      latest_energy_data['generationmix'] = EnergyDataClient.sort_generation_mix(
+        latest_energy_data.get('generationmix'))
 
     return latest_energy_data
 
@@ -31,7 +33,8 @@ class EnergyDataClient:
     logger.info(f"Retrieved previous energy data from {previous_from} to {previous_to}")
     previous_energy_data: EnergyData = res.get('data')[0]
     if sort_generation_mix:
-      previous_energy_data['generationmix'] = EnergyDataClient.sort_generation_mix(previous_energy_data.get('generationmix'))
+      previous_energy_data['generationmix'] = EnergyDataClient.sort_generation_mix(
+        previous_energy_data.get('generationmix'))
 
     return previous_energy_data
 
@@ -47,3 +50,20 @@ class EnergyDataClient:
       generation_mix.append(other_fuel)
 
     return generation_mix
+
+  @staticmethod
+  def current_carbon_intensity_index() -> CarbonIntensityIndex:
+    res = requests.get("https://api.carbonintensity.org.uk/intensity").json()
+    intensity_data = res.get('data')[0]
+    return intensity_data.get('intensity').get('index')
+
+  @staticmethod
+  def past_24h_energy_data() -> List[EnergyData]:
+    now = datetime.now(timezone("Europe/London")).strftime('%Y-%m-%dT%H:%MZ')
+    res = requests.get(f"https://api.carbonintensity.org.uk/generation/{now}/pt24h").json()
+    past_energy_data = res.get('data')
+
+    return past_energy_data
+
+
+  # TODO expand with retrieval of past 24h energy intensity data: https://api.carbonintensity.org.uk/intensity/2025-03-19T08:33Z/pt24h
