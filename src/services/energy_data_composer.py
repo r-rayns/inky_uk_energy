@@ -4,6 +4,8 @@ from pathlib import Path
 from typing import List, Tuple, Dict
 from datetime import datetime
 
+import pytz
+
 from src.logger import logger
 from src.data.energy_data_client import EnergyDataClient
 from src.data.models import EnergyData, GenerationMix, valid_fuel_types, PhatColourPalette
@@ -40,8 +42,9 @@ class EnergyDataComposer:
 
     # Prepare template context
     context = {
-      'from_time': from_datetime.strftime('%H:%M'),
-      'to_time': to_datetime.strftime('%H:%M'),
+      # Convert times to Europe/London timezone, as data is representative of the UK
+      'from_time': from_datetime.astimezone(pytz.timezone('Europe/London')).strftime('%H:%M'),
+      'to_time': to_datetime.astimezone(pytz.timezone('Europe/London')).strftime('%H:%M'),
       'date': to_datetime.strftime('%d-%b-%Y'),
       'top_row_generation_mix': generation_mix[:3],
       'middle_row_generation_mix': generation_mix[3:6],
@@ -74,8 +77,9 @@ class EnergyDataComposer:
 
     # Prepare template context
     context = {
-      'from_time': from_datetime.strftime('%H:%M'),
-      'to_time': to_datetime.strftime('%H:%M'),
+      # Convert times to Europe/London timezone, as data is representative of the UK
+      'from_time': from_datetime.astimezone(pytz.timezone('Europe/London')).strftime('%H:%M'),
+      'to_time': to_datetime.astimezone(pytz.timezone('Europe/London')).strftime('%H:%M'),
       'date': to_datetime.strftime('%d-%b-%Y'),
       'top_row_generation_mix': generation_mix[:3],
       'middle_row_generation_mix': generation_mix[3:6],
@@ -99,15 +103,20 @@ class EnergyDataComposer:
 
     # Extract the generation mix and time range
     generation_mix: List[GenerationMix] = latest_energy_data.get('generationmix')
-    from_datetime = datetime.strptime(latest_energy_data.get('from'), '%Y-%m-%dT%H:%MZ')
-    to_datetime = datetime.strptime(latest_energy_data.get('to'), '%Y-%m-%dT%H:%MZ')
+    from_datetime_utc = (datetime
+                         .strptime(latest_energy_data.get('from'), '%Y-%m-%dT%H:%MZ')
+                         .replace(tzinfo=pytz.utc))  # ensure datetime is in UTC
+    to_datetime_utc = (datetime
+                       .strptime(latest_energy_data.get('to'), '%Y-%m-%dT%H:%MZ')
+                       .replace(tzinfo=pytz.utc))  # ensure datetime is in UTC
 
     # Get the previous generation mix and assign percentage data by the related fuel type
-    previous_energy_data = EnergyDataClient.previous_energy_data(from_datetime, to_datetime, sort_generation_mix=False)
+    previous_energy_data = EnergyDataClient.previous_energy_data(from_datetime_utc, to_datetime_utc,
+                                                                 sort_generation_mix=False)
     previous_generation_mix: List[GenerationMix] = previous_energy_data.get('generationmix')
     previous_mix_by_fuel = {mix.get('fuel'): mix.get('perc') for mix in previous_generation_mix}
 
-    return generation_mix, from_datetime, to_datetime, previous_mix_by_fuel
+    return generation_mix, from_datetime_utc, to_datetime_utc, previous_mix_by_fuel
 
   def collate_svg_files(self) -> dict:
     # Read all SVG files in the directory so they can be passed to the template in the context

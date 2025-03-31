@@ -396,10 +396,12 @@
     const chartData = JSON.parse(jsonData);
 
     // Create an array of times to use as the x-axis labels
-    const labels = chartData.map(entry => new Date(entry.from).toLocaleTimeString('en-GB', {
-      hour: '2-digit',
-      minute: '2-digit'
-    }));
+    const labels = chartData.map(entry => new Date(entry.from)
+      .toLocaleTimeString('en-GB', {
+        hour: '2-digit',
+        minute: '2-digit',
+        timeZone: 'Europe/London'
+      }));
 
     const fuelTypeColourMapping = {
       gas: getCssVariable('--gas'),

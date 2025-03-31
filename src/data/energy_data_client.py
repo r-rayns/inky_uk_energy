@@ -23,14 +23,14 @@ class EnergyDataClient:
     return latest_energy_data
 
   @staticmethod
-  def previous_energy_data(from_datetime: datetime, to_datetime: datetime, sort_generation_mix=True) -> EnergyData:
+  def previous_energy_data(current_from_utc: datetime, current_to_utc: datetime, sort_generation_mix=True) -> EnergyData:
     # Calculate the time range to retrieve the previous data
     # The API returns data in 30 minute intervals.
     # Subtract 29 minutes from "from" else the API will return data overlapping into an earlier interval.
-    previous_from = (from_datetime - timedelta(minutes=29)).strftime('%Y-%m-%dT%H:%MZ')
-    previous_to = (to_datetime - timedelta(minutes=30)).strftime('%Y-%m-%dT%H:%MZ')
-    res = requests.get(f"https://api.carbonintensity.org.uk/generation/{previous_from}/{previous_to}").json()
-    logger.info(f"Retrieved previous energy data from {previous_from} to {previous_to}")
+    previous_from_utc = (current_from_utc - timedelta(minutes=29)).strftime('%Y-%m-%dT%H:%MZ')
+    previous_to_utc = (current_to_utc - timedelta(minutes=30)).strftime('%Y-%m-%dT%H:%MZ')
+    res = requests.get(f"https://api.carbonintensity.org.uk/generation/{previous_from_utc}/{previous_to_utc}").json()
+    logger.info(f"Retrieved previous energy data from {previous_from_utc} to {previous_to_utc} (UTC)")
     previous_energy_data: EnergyData = res.get('data')[0]
     if sort_generation_mix:
       previous_energy_data['generationmix'] = EnergyDataClient.sort_generation_mix(
@@ -59,7 +59,8 @@ class EnergyDataClient:
 
   @staticmethod
   def past_24h_energy_data() -> List[EnergyData]:
-    now = datetime.now(timezone("Europe/London")).strftime('%Y-%m-%dT%H:%MZ')
+    now = datetime.now(timezone("UTC")).strftime('%Y-%m-%dT%H:%MZ')
+    logger.info(f"Retrieving past 24h energy data from {now} (UTC)")
     res = requests.get(f"https://api.carbonintensity.org.uk/generation/{now}/pt24h").json()
     past_energy_data = res.get('data')
 
